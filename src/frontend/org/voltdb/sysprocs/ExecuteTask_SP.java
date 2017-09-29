@@ -24,6 +24,7 @@ import org.json_voltpatches.JSONException;
 import org.json_voltpatches.JSONStringer;
 import org.voltcore.utils.Pair;
 import org.voltdb.DRConsumerDrIdTracker;
+import org.voltdb.DRConsumerDrIdTracker.DRSiteDrIdTracker;
 import org.voltdb.DependencyPair;
 import org.voltdb.ParameterSet;
 import org.voltdb.SystemProcedureExecutionContext;
@@ -61,7 +62,7 @@ public class ExecuteTask_SP extends VoltSystemProcedure {
         TaskType taskType = TaskType.values()[taskId];
         switch (taskType) {
         case SP_JAVA_GET_DRID_TRACKER:
-            Map<Integer, Map<Integer, DRConsumerDrIdTracker>> drIdTrackers = ctx.getDrAppliedTrackers();
+            Map<Integer, Map<Integer, DRSiteDrIdTracker>> drIdTrackers = ctx.getDrAppliedTrackers();
             Pair<Long, Long> lastConsumerUniqueIds = ctx.getDrLastAppliedUniqueIds();
             try {
                 setAppStatusString(jsonifyTrackedDRData(lastConsumerUniqueIds, drIdTrackers));
@@ -81,7 +82,7 @@ public class ExecuteTask_SP extends VoltSystemProcedure {
     }
 
     public static String jsonifyTrackedDRData(Pair<Long, Long> lastConsumerUniqueIds,
-                                              Map<Integer, Map<Integer, DRConsumerDrIdTracker>> allProducerTrackers)
+                                              Map<Integer, Map<Integer, DRSiteDrIdTracker>> allProducerTrackers)
     throws JSONException {
         JSONStringer stringer = new JSONStringer();
         stringer.object();
@@ -89,9 +90,9 @@ public class ExecuteTask_SP extends VoltSystemProcedure {
         stringer.keySymbolValuePair("lastConsumerMpUniqueId", lastConsumerUniqueIds.getSecond());
         stringer.key("trackers").object();
         if (allProducerTrackers != null) {
-            for (Map.Entry<Integer, Map<Integer, DRConsumerDrIdTracker>> clusterTrackers : allProducerTrackers.entrySet()) {
+            for (Map.Entry<Integer, Map<Integer, DRSiteDrIdTracker>> clusterTrackers : allProducerTrackers.entrySet()) {
                 stringer.key(Integer.toString(clusterTrackers.getKey())).object();
-                for (Map.Entry<Integer, DRConsumerDrIdTracker> e : clusterTrackers.getValue().entrySet()) {
+                for (Map.Entry<Integer, DRSiteDrIdTracker> e : clusterTrackers.getValue().entrySet()) {
                     stringer.key(e.getKey().toString());
                     stringer.value(e.getValue().toJSON());
                 }
